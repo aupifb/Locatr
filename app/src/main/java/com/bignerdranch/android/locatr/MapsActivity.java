@@ -7,10 +7,17 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -44,6 +51,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+    }
+
+    private void addFirebaseMarkers() {
+
+
+        Firebase.setAndroidContext(this);
+        Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
+        Firebase spacesRef = myFirebaseRef.child("spaces");
+        Query queryRef = spacesRef.orderByKey();
+        queryRef.addChildEventListener(new ChildEventListener() {
+
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Parking parks = dataSnapshot.getValue(Parking.class);
+                Log.i("lol", parks.getSpaceCoordinates() + ": " + parks.getCreatorUser());
+                LatLng mlatlng = new LatLng(parks.getLat(), parks.getLng());
+                mMap.addMarker(new MarkerOptions()
+                        .position(mlatlng)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_light))
+                        .snippet(parks.getCreatorUser())
+                        .title(parks.getSpaceCoordinates()));
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(FirebaseError error) {
+            }
+        });
+
     }
 
 
@@ -59,15 +112,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setCompassEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
         // Add a marker in Sydney and move the camera
         //LatLng sydney = new LatLng(-34, 151);
         //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        LatLng currentlatlng = new LatLng(currentlatitude, currentlongitude);
-        mMap.addMarker(new MarkerOptions().position(currentlatlng).title("Parking"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentlatlng, 100));
+        //LatLng currentlatlng = new LatLng(currentlatitude, currentlongitude);
+        //mMap.addMarker(new MarkerOptions().position(currentlatlng).title("Parking"));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentlatlng, 100));
+        addFirebaseMarkers();
 
     }
 }

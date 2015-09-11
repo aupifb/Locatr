@@ -32,6 +32,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,6 +53,9 @@ public class LocatrFragment extends android.support.v4.app.Fragment {
     private Button mButton, mButtonMap, mButtonSync, mButtonMarkers;
     private EditText mEditTextSync;
     private TextView mTextViewLegit;
+
+    private Double mLat, mLong;
+    private LatLng mLatLng;
 
 
     public static LocatrFragment newInstance() {
@@ -78,21 +82,44 @@ public class LocatrFragment extends android.support.v4.app.Fragment {
         mButtonSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Firebase.setAndroidContext(getContext());
-                Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
-                Firebase spacesRef = myFirebaseRef.child("spaces");
-                Parking park = new Parking(mEditTextSync.getText().toString(), "Jojo");
-                spacesRef.push().setValue(park);
-                spacesRef.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
 
-                    }
 
-                    @Override
-                    public void onCancelled(FirebaseError error) {
-                    }
-                });
+                LocationRequest request = LocationRequest.create();
+                request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                request.setNumUpdates(1);
+                request.setInterval(0);
+
+                LocationServices.FusedLocationApi
+                        .requestLocationUpdates(mClient, request, new LocationListener() {
+                            @Override
+                            public void onLocationChanged(Location location) {
+                                mCurrentLocation = location;
+                                Log.i("lol", "Got a fix: " + location);
+                                Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                                mLat = mCurrentLocation.getLatitude();
+                                mLong = mCurrentLocation.getLongitude();
+
+                                Firebase.setAndroidContext(getContext());
+                                Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
+                                Firebase spacesRef = myFirebaseRef.child("spaces");
+                                Parking park = new Parking(mEditTextSync.getText().toString(), "Jojo", mLat, mLong);
+                                spacesRef.push().setValue(park);
+                                spacesRef.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot snapshot) {
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(FirebaseError error) {
+                                    }
+                                });
+                            }
+                        });
+
+
+
+
 
             }
         });
@@ -208,7 +235,8 @@ public class LocatrFragment extends android.support.v4.app.Fragment {
                         mCurrentAddress = mCurrentList.get(0);
                         result = mCurrentAddress.getAddressLine(0) + ", " + mCurrentAddress.getLocality() + ", " + mCurrentAddress.getCountryCode();
                         Toast.makeText(getActivity(), result, Toast.LENGTH_LONG).show();
-                        Intent i = MapsActivity.newIntent(getActivity(), mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                        //Intent i = MapsActivity.newIntent(getActivity(), mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                        Intent i = new Intent(getActivity(), MapsActivity.class);
                         startActivity(i);
                     }
                 });
