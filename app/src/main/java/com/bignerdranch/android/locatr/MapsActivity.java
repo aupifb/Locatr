@@ -120,9 +120,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
-            public boolean onMarkerClick(Marker marker) {
+            public boolean onMarkerClick(final Marker marker) {
                 Log.d("lol", marker.getId() + " id, " + marker.hashCode());
                 marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_dark));
+
+
+                Firebase.setAndroidContext(getApplicationContext());
+                Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
+                final Firebase spacesRef = myFirebaseRef.child("spaces");
+                Query queryRef = spacesRef.orderByKey();
+                queryRef.addChildEventListener(new ChildEventListener() {
+
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        Parking parks = dataSnapshot.getValue(Parking.class);
+                        //Log.i("lol", parks.getSpaceCoordinates() + ": " + parks.getCreatorUser());
+                        LatLng mlatlng = new LatLng(parks.getLat(), parks.getLng());
+
+                        if (marker.getPosition().equals(mlatlng)) {
+                            Log.d("lol", "equals: true");
+                        } else {
+                            Log.d("lol", "equals: false");
+                        }
+
+                        mMap.addMarker(new MarkerOptions()
+                                .position(mlatlng)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_light))
+                                .snippet(parks.getCreatorUser())
+                                .title(parks.getSpaceCoordinates()));
+
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError error) {
+                    }
+                });
+
+
+
+
                 return false;
             }
         });
