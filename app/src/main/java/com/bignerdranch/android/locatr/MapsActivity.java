@@ -18,6 +18,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -77,12 +78,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Parking parks = dataSnapshot.getValue(Parking.class);
                 Log.i("lol", parks.getSpaceCoordinates() + ": " + parks.getCreatorUser());
                 LatLng mlatlng = new LatLng(parks.getLat(), parks.getLng());
+                int legitlevel = parks.getLegitlevel();
+
+                BitmapDescriptor icon;
+
+                if (legitlevel == 0) {
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
+                } else if (legitlevel < 5) {
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);
+                } else icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
 
                 mMap.addMarker(new MarkerOptions()
                         .position(mlatlng)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_light))
+                                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_light))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN))
                         .snippet(parks.getCreatorUser())
+                        .icon(icon)
                         .title(parks.getSpaceCoordinates()));
+
 
             }
 
