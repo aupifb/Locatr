@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 import com.firebase.client.ChildEventListener;
@@ -22,7 +23,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, MarkerClickFragment.Callbacks {
 
     private GoogleMap mMap;
     double currentlatitude, currentlongitude;
@@ -31,6 +32,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             "com.bignerdranch.android.criminalintent.current_latitude";
     private static final String EXTRA_CURRENT_LONGITUDE =
             "com.bignerdranch.android.criminalintent.current_longitude";
+
+
+    //private static final String DIALOG_MARKER_REMOVE = "DialogMarkerRemove";
+
+    //private static final int REQUEST_MARKER_REMOVE = 0;
+
 
     public static Intent newIntent(Context packageContext, double latitude, double longitude) {
         Intent intent = new Intent(packageContext, MapsActivity.class);
@@ -128,51 +135,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Firebase.setAndroidContext(getApplicationContext());
                 Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
                 final Firebase spacesRef = myFirebaseRef.child("spaces");
-                Query queryRef = spacesRef.orderByKey();
-                queryRef.addChildEventListener(new ChildEventListener() {
 
+                spacesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                        Parking parks = dataSnapshot.getValue(Parking.class);
-                        //Log.i("lol", parks.getSpaceCoordinates() + ": " + parks.getCreatorUser());
-                        LatLng mlatlng = new LatLng(parks.getLat(), parks.getLng());
+                    public void onDataChange(DataSnapshot snapshot) {
+                        for (DataSnapshot parkSnapshot : snapshot.getChildren()) {
+                            Parking park = parkSnapshot.getValue(Parking.class);
+                            LatLng mlatlng = new LatLng(park.getLat(), park.getLng());
+                            Log.d("lol", parkSnapshot.getKey());
 
-                        if (marker.getPosition().equals(mlatlng)) {
-                            Log.d("lol", "equals: true");
-                        } else {
-                            Log.d("lol", "equals: false");
+
+                            if (marker.getPosition().equals(mlatlng)) {
+                                Log.d("lol", "equals: true");
+                                FragmentManager manager = getSupportFragmentManager();
+                                MarkerClickFragment dialog = MarkerClickFragment
+                                        .newInstance(R.string.MarkerClickFragmentTitle, parkSnapshot.getKey());
+                                //dialog.setTargetFragment(MapsActivity.this, REQUEST_MARKER_REMOVE);
+                                dialog.show(manager, "DialogRemoveMarker");
+                                //spacesRef.child(parkSnapshot.getKey()).removeValue();
+                            } else {
+                                Log.d("lol", "equals: false");
+                            }
                         }
-
-                        mMap.addMarker(new MarkerOptions()
-                                .position(mlatlng)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_light))
-                                .snippet(parks.getCreatorUser())
-                                .title(parks.getSpaceCoordinates()));
-
                     }
 
                     @Override
-                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-                    }
-
-                    @Override
-                    public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError error) {
+                    public void onCancelled(FirebaseError firebaseError) {
                     }
                 });
-
-
-
 
                 return false;
             }
@@ -189,4 +179,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         addFirebaseMarkers();
 
     }
+
+    public void removeMarker() {
+       recreate();
+    }
+
 }

@@ -4,4 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Location</string>
     <string name="title_activity_maps">Map</string>
+    <string name="alert_dialog_ok">OK</string>
+    <string name="alert_dialog_cancel">Cancel</string>
+    <string name="MarkerClickFragmentTitle">Remove marker?</string>
 </resources>
