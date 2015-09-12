@@ -9,16 +9,18 @@ public class Parking {
     private String spaceCoordinates;
     private String creatorUser;
     private Double lat, lng;
+    private int markerhash;
 
     public Parking() {
 
     }
 
-    public Parking(String spaceCoordinates, String creatorUser, Double lat, Double lng) {
+    public Parking(String spaceCoordinates, String creatorUser, Double lat, Double lng, int markerhash) {
         this.spaceCoordinates = spaceCoordinates;
         this.creatorUser = creatorUser;
         this.lat = lat;
         this.lng = lng;
+        this.markerhash = markerhash;
     }
 
     public String getSpaceCoordinates() {
@@ -51,5 +53,13 @@ public class Parking {
 
     public void setLng(Double lng) {
         this.lng = lng;
+    }
+
+    public int getMarkerhash() {
+        return markerhash;
+    }
+
+    public void setMarkerhash(int markerhash) {
+        this.markerhash = markerhash;
     }
 }

@@ -102,7 +102,7 @@ public class LocatrFragment extends android.support.v4.app.Fragment {
                                 Firebase.setAndroidContext(getContext());
                                 Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
                                 Firebase spacesRef = myFirebaseRef.child("spaces");
-                                Parking park = new Parking(mEditTextSync.getText().toString(), "Jojo", mLat, mLong);
+                                Parking park = new Parking(mEditTextSync.getText().toString(), "Jojo", mLat, mLong, 0);
                                 spacesRef.push().setValue(park);
                                 spacesRef.addValueEventListener(new ValueEventListener() {
                                     @Override

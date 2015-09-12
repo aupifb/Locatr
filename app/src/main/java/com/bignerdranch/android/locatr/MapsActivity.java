@@ -61,7 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Firebase.setAndroidContext(this);
         Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
-        Firebase spacesRef = myFirebaseRef.child("spaces");
+        final Firebase spacesRef = myFirebaseRef.child("spaces");
         Query queryRef = spacesRef.orderByKey();
         queryRef.addChildEventListener(new ChildEventListener() {
 
@@ -70,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Parking parks = dataSnapshot.getValue(Parking.class);
                 Log.i("lol", parks.getSpaceCoordinates() + ": " + parks.getCreatorUser());
                 LatLng mlatlng = new LatLng(parks.getLat(), parks.getLng());
+
                 mMap.addMarker(new MarkerOptions()
                         .position(mlatlng)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_light))
