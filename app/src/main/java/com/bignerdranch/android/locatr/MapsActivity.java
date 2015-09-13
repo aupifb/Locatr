@@ -24,6 +24,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.DuplicateFormatFlagsException;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, MarkerClickFragment.Callbacks {
 
     private GoogleMap mMap;
@@ -142,8 +144,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public boolean onMarkerClick(final Marker marker) {
                 Log.d("lol", marker.getId() + " id, " + marker.hashCode());
-                marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_play_dark));
-
 
                 Firebase.setAndroidContext(getApplicationContext());
                 Firebase myFirebaseRef = new Firebase("https://geoparking.firebaseio.com/");
@@ -155,19 +155,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (DataSnapshot parkSnapshot : snapshot.getChildren()) {
                             Parking park = parkSnapshot.getValue(Parking.class);
                             LatLng mlatlng = new LatLng(park.getLat(), park.getLng());
-                            Log.d("lol", parkSnapshot.getKey());
 
 
                             if (marker.getPosition().equals(mlatlng)) {
-                                Log.d("lol", "equals: true");
+                                Double lat = marker.getPosition().latitude;
+                                Double lng = marker.getPosition().longitude;
                                 FragmentManager manager = getSupportFragmentManager();
                                 MarkerClickFragment dialog = MarkerClickFragment
-                                        .newInstance(R.string.MarkerClickFragmentTitle, parkSnapshot.getKey());
+                                        .newInstance(R.string.MarkerClickFragmentTitle, parkSnapshot.getKey(), lat, lng, park.getLegitlevel());
                                 //dialog.setTargetFragment(MapsActivity.this, REQUEST_MARKER_REMOVE);
                                 dialog.show(manager, "DialogRemoveMarker");
                                 //spacesRef.child(parkSnapshot.getKey()).removeValue();
                             } else {
-                                Log.d("lol", "equals: false");
                             }
                         }
                     }
